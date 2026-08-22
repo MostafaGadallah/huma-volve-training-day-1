@@ -4,44 +4,43 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
-use Illuminate\Http\Request;
-
+use App\Http\Requests\PostRequest;
+use App\Http\Requests\UpdateRequest;
+use App\Http\Controllers\ApiResponseTrait;
 class PostController extends Controller
 {
+    use ApiResponseTrait;
     public function index()
     {
         $posts = Post::all();
-        return response()->json($posts);
+        return $this->success($posts,"posts found successfully");
     }
-    public function show($id)
+    public function show(Post $post)
     {
-        $post = Post::find($id);
         if (!$post) {
-            return response()->json(["message"=>"post not found"],404);
+            return $this->error("post not found");
         }
-        return response()->json($post);
+        return $this->success($post,"post found successfully");
     }
-    public function store(Request $request)
+    public function store(PostRequest $request)
     {
         $post = Post::create($request->all());
-        return response()->json($post);
+        return $this->success($post,"post created successfully",201);
     }
-    public function update(Request $request, $id)
+    public function update(UpdateRequest $request, Post $post)
     {
-        $post = Post::find($id);
         if (!$post) {
-            return response()->json(["message"=>"post not found"],404);
+            return $this->error("post not found");
         }
-        $post->update($request->all());
-        return response()->json($post);
+        $post->update($request->validated());
+        return $this->success($post,"post updated successfully",201);
     }
-    public function destroy($id)
+    public function destroy( Post $post)
     {
-        $post = Post::find($id);
         if (!$post) {
-            return response()->json(["message"=>"post not found"],404);
+            return $this->error("post not found");
         }
         $post->delete();
-        return response()->json(["message"=>"post deleted successfully"]);
+        return $this->success($post,"post deleted successfully",204);
     }
 }
